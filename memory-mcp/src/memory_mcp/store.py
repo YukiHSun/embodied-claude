@@ -8,6 +8,7 @@ import math
 import sqlite3
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -314,6 +315,9 @@ class MemoryStore:
         async with self._lock:
             if self._db is None:
                 db_path = self._config.db_path
+
+                if db_path != ":memory:":
+                    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
                 def _open() -> sqlite3.Connection:
                     conn = sqlite3.connect(db_path, check_same_thread=False)
