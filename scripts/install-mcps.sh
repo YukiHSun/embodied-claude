@@ -55,17 +55,23 @@ print('  done')
   esac
 }
 
+TOTAL=${#MCP_DIRS[@]}
+i=0
+START=$(date +%s)
 for dir in "${MCP_DIRS[@]}"; do
+  i=$((i+1))
   if [ ! -f "$dir/pyproject.toml" ]; then
-    echo "⚠️  skipping $dir (no pyproject.toml)"
+    echo "⚠️  [$i/$TOTAL] skipping $dir (no pyproject.toml)"
     continue
   fi
   extra=$(extras_for "$dir")
+  STEP_START=$(date +%s)
   echo ""
-  echo "==> $dir  (uv sync $extra $DEV_FLAG)"
+  echo "==> [$i/$TOTAL] $dir  (uv sync $extra $DEV_FLAG)"
   (cd "$dir" && uv sync $extra $DEV_FLAG)
   warm_for "$dir"
+  echo "    ↳ done in $(($(date +%s)-STEP_START))s  (elapsed total: $(($(date +%s)-START))s)"
 done
 
 echo ""
-echo "✅ all MCP dependencies installed"
+echo "✅ all MCP dependencies installed (total: $(($(date +%s)-START))s)"
