@@ -10,7 +10,7 @@
       "env": {
         "TAPO_CAMERA_HOST": "192.168.1.xxx",
         "TAPO_USERNAME": "your-username",
-        "TAPO_PASSWORD": "your-password",
+        "TAPO_PASSWORD": "your-password"
       }
     },
     "desire-system": {
