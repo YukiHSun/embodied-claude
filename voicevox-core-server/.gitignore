@@ -1,0 +1,5 @@
+.venv/
+voicevox_core/models/
+voicevox_core/dict/
+voicevox_core/onnxruntime/
+voicevox_core/output.wav

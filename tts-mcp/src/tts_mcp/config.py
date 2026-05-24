@@ -53,6 +53,8 @@ class VoicevoxConfig:
 
     url: str
     speaker: int
+    autostart_dir: str | None
+    autostart_timeout: float
 
     @classmethod
     def from_env(cls) -> "VoicevoxConfig | None":
@@ -63,6 +65,8 @@ class VoicevoxConfig:
         return cls(
             url=url.rstrip("/"),
             speaker=int(os.getenv("VOICEVOX_SPEAKER", "3")),
+            autostart_dir=os.getenv("VOICEVOX_AUTOSTART_DIR") or None,
+            autostart_timeout=float(os.getenv("VOICEVOX_AUTOSTART_TIMEOUT", "60")),
         )
 
 

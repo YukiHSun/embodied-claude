@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .go2rtc import Go2RTCProcess
+    from .voicevox_runner import VoicevoxCoreRunner
 
 from mcp.server import Server
 from mcp.server.stdio import stdio_server
@@ -32,6 +33,7 @@ class TTSMCP:
         self._engines: dict[str, TTSEngine] = {}
         self._server = Server(self._server_config.name)
         self._go2rtc: Go2RTCProcess | None = None
+        self._voicevox_runner: VoicevoxCoreRunner | None = None
         self._init_engines()
         self._setup_handlers()
 
@@ -302,9 +304,27 @@ class TTSMCP:
             logger.warning("go2rtc failed to start: %s", exc)
             self._go2rtc = None
 
+    async def _ensure_voicevox(self) -> None:
+        """Auto-start voicevox-core-server if configured and not yet reachable."""
+        vv = self._config.voicevox
+        if not vv or not vv.autostart_dir:
+            return
+
+        from .voicevox_runner import VoicevoxCoreRunner
+
+        runner = VoicevoxCoreRunner(
+            project_dir=Path(vv.autostart_dir),
+            url=vv.url,
+            startup_timeout=vv.autostart_timeout,
+        )
+        ok = await runner.start()
+        if ok:
+            self._voicevox_runner = runner
+
     async def run(self) -> None:
         try:
             await self._ensure_go2rtc()
+            await self._ensure_voicevox()
             async with stdio_server() as (read_stream, write_stream):
                 await self._server.run(
                     read_stream,
@@ -314,6 +334,8 @@ class TTSMCP:
         finally:
             if self._go2rtc:
                 self._go2rtc.stop()
+            if self._voicevox_runner:
+                self._voicevox_runner.stop()
 
 
 def main() -> None:
